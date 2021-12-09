@@ -8,8 +8,8 @@ export const isOperationAllowed = (operation) => Object
   .values(PRODUCT_OPERATIONS)
   .includes(operation);
 
-export const getProductById = async (productId, trx) => {
-  const product = await knex('product').transacting(trx).where('productId', productId);
+export const getProductById = async (productId) => {
+  const product = await knex('product').where('productId', productId);
   if (product.length === 0) {
     console.info(`Product ${productId} not found`);
     return null;
@@ -18,26 +18,26 @@ export const getProductById = async (productId, trx) => {
   return product[0];
 };
 
-export const createProduct = async (productId, productName, trx) => {
+export const createProduct = async (productId, productName) => {
   if (!productId || !productName) {
     console.warn('Not enough info to create a product');
     return
   }
   console.info(`Creating product ${productId}`);
 
-  await knex('product').transacting(trx).insert({
+  await knex('product').insert({
     productId,
     name: productName,
   });
 };
 
-export const addHistory = async (productId, amount, operation, date, trx) => {
+export const addHistory = async (productId, amount, operation, date) => {
   if (!isOperationAllowed(operation.toLowerCase())) {
     console.error(`Operation ${operation} not allowed. Please use in/out operations`);
     return;
   }
 
-  await knex('history').transacting(trx).insert({
+  await knex('history').insert({
     product: productId,
     date: date.toJSON(),
     amount,
@@ -45,8 +45,8 @@ export const addHistory = async (productId, amount, operation, date, trx) => {
   });
 };
 
-export const getProductStockByProductId = async (productId, trx) => {
-  const stock = await knex('stock').transacting(trx).where({
+export const getProductStockByProductId = async (productId) => {
+  const stock = await knex('stock').where({
     product: productId,
   });
   if (stock.length === 0) {
@@ -57,18 +57,18 @@ export const getProductStockByProductId = async (productId, trx) => {
   return stock[0];
 };
 
-export const createProductStock = async (productId, amount, trx) => {
+export const createProductStock = async (productId, amount) => {
   console.info(`Creating product stock ${productId}`);
 
-  await knex('stock').transacting(trx).insert({
+  await knex('stock').insert({
     product: productId,
     amount,
   });
 };
 
-export const updateProductStock = async (productId, stock, trx) => {
+export const updateProductStock = async (productId, stock) => {
   console.info(`Update stock for product ${productId}`);
-  await knex('stock').transacting(trx).where('product', productId).update({
+  await knex('stock').where('product', productId).update({
     amount: stock,
   });
 };

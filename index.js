@@ -26,32 +26,28 @@ app.post('/register-purchase', async (req, res) => {
     return res.status(400).send({ error: 'Invalid date format' });
   }
   if (!await validatePurchaseAmountForProduct(productId, date, amount)) {
-    return res.status(400).send({ error: 'Max limit exceeded' });
+    return res.status(400).send({ error: 'Max limit per month exceeded' });
   }
 
-  const trx = await knex.transaction();
-
   try {
-    let product = await getProductById(productId, trx);
+    let product = await getProductById(productId);
     if (!product) {
-      product = await createProduct(productId, productName, trx);
+      product = await createProduct(productId, productName);
     }
 
-    await addHistory(productId, amount, PRODUCT_OPERATIONS.IN, moment(date, DATE_FORMAT), trx);
+    await addHistory(productId, amount, PRODUCT_OPERATIONS.IN, moment(date, DATE_FORMAT));
 
-    const productStock = await getProductStockByProductId(productId, trx);
+    const productStock = await getProductStockByProductId(productId);
     if (!productStock) {
-      await createProductStock(productId, amount, trx);
+      await createProductStock(productId, amount);
     } else {
       const newStock = productStock.amount + parseInt(amount, 10);
-      await updateProductStock(productId, newStock, trx);
+      await updateProductStock(productId, newStock);
     }
 
-    await trx.commit();
     return res.send({ success: true });
   } catch (err) {
     console.error(err);
-    await trx.rollback();
     return res.send({ success: false, error: 'Could not register purchase' });
   }
 });
@@ -65,31 +61,27 @@ app.post('/register-sale', async (req, res) => {
     return res.status(500).json({ error: 'Invalid date format' });
   }
 
-  const trx = await knex.transaction();
-
   const intAmount = parseInt(amount, 10);
 
   try {
-    const product = await getProductById(productId, trx);
+    const product = await getProductById(productId);
     if (!product) {
       return res.status(500).json({ error: `Product ${productId} not found` });
     }
 
-    const productStock = await getProductStockByProductId(productId, trx);
+    const productStock = await getProductStockByProductId(productId);
     if (productStock.amount < intAmount) {
       return res.json({ error: `Not enough stock for product ${productId}` });
     }
 
-    await addHistory(productId, amount, PRODUCT_OPERATIONS.OUT, moment(date, DATE_FORMAT), trx);
+    await addHistory(productId, amount, PRODUCT_OPERATIONS.OUT, moment(date, DATE_FORMAT));
 
     const newStock = productStock.amount - intAmount;
-    await updateProductStock(productId, newStock, trx);
+    await updateProductStock(productId, newStock);
 
-    await trx.commit();
     return res.send({ success: true });
   } catch (err) {
     console.error(err);
-    await trx.rollback();
     return res.send({ success: false, error: 'Could not register purchase' });
   }
 });

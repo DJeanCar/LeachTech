@@ -35,31 +35,25 @@ afterEach(() => {
 });
 
 describe('Products utils', () => {
-  let trx = null;
   beforeEach(async () => {
     await db('product').delete();
     await db('history').delete();
     await db('stock').delete();
-    trx = await db.transaction();
-  });
-
-  afterEach(() => {
-    trx.commit();
   });
 
   describe('Function getProductById', () => {
     test('should return null if product does not exist', async () => {
-      const product = await getProductById('1', trx);
+      const product = await getProductById('1');
   
       expect(product).toBe(null);
     });
   
     test('should return product object if product exist', async () => {
-      await db('product').transacting(trx).insert({
+      await db('product').insert({
         productId: '1',
         name: 'Rice',
       });
-      const product = await getProductById('1', trx);
+      const product = await getProductById('1');
 
       expect(product).not.toBe(null);
       expect(product.productId).toBe('1');
@@ -69,14 +63,14 @@ describe('Products utils', () => {
   describe('Function createProduct', () => {
     test('should not create product if product does not have name or id', async () => {
       await createProduct('1');
-      const product = await getProductById('1', trx);
+      const product = await getProductById('1');
 
       expect(product).toBe(null);
     });
 
     test('should create product if it has name and id', async () => {
-      await createProduct('2', 'Sugar', trx);
-      const product = await getProductById('2', trx);
+      await createProduct('2', 'Sugar');
+      const product = await getProductById('2');
 
       expect(product).not.toBe(null);
       expect(product.productId).toBe('2');
@@ -85,33 +79,33 @@ describe('Products utils', () => {
 
   describe('Function addHistory', () => {
     test('should not add history if operation is not allowed', async () => {
-      await addHistory('1', 2, 'invalid_operation', new Date(), trx);
+      await addHistory('1', 2, 'invalid_operation', new Date());
 
-      const history = await db('history').transacting(trx).where('product', '1');
+      const history = await db('history').where('product', '1');
       expect(history.length).toBe(0);
     });
 
     test('should create history if operation is allowed', async () => {
-      await addHistory('1', 2, 'in', new Date(), trx);
-      const history = await db('history').transacting(trx).where('product', '1');
+      await addHistory('1', 2, 'in', new Date());
+      const history = await db('history').where('product', '1');
       expect(history.length).toBe(1);
     });
   });
 
   describe('Function getProductStockByProductId', () => {
     test('should null if product does not exist', async () => {
-      const stock = await getProductStockByProductId('1', trx);
+      const stock = await getProductStockByProductId('1');
       expect(stock).toBe(null);
     });
 
     test('should return stock object if product exist', async () => {
-      await createProduct('1', 'Sugar', trx);
-      await db('stock').transacting(trx).insert({
+      await createProduct('1', 'Sugar');
+      await db('stock').insert({
         product: '1',
         amount: 5,
       });
 
-      const stock = await getProductStockByProductId('1', trx);
+      const stock = await getProductStockByProductId('1');
       expect(stock).not.toBe(null);
       expect(stock.product).toBe('1');
     });
@@ -119,14 +113,14 @@ describe('Products utils', () => {
 
   describe('function updateProductStock', () => {
     test('should update product stock', async () => {
-      await createProduct('1', 'Sugar', trx);
-      await db('stock').transacting(trx).insert({
+      await createProduct('1', 'Sugar');
+      await db('stock').insert({
         product: '1',
         amount: 5,
       });
 
-      await updateProductStock('1', 10, trx);
-      const stock = await getProductStockByProductId('1', trx);
+      await updateProductStock('1', 10);
+      const stock = await getProductStockByProductId('1');
       expect(stock.amount).toBe(10)
     });
   });
