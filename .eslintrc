@@ -1,0 +1,10 @@
+{
+    "extends": "airbnb",
+    "rules": {
+        "no-console": "off",
+        "import/extensions": ["error", "always", {"ignorePackages": true} ],
+        "env": {
+            "jest/globals": true
+        }
+    }
+}
