@@ -1,5 +1,6 @@
-docker build -t lean-tech-app .
+LeanTech
+========
 
-docker run -it -p 3000:3000 lean-tech-app
-
-https://github.com/knex/knex/issues/2820
+1. npm i
+2. npm run migrate
+3. npm start
