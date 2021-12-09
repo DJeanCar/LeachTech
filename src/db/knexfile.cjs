@@ -4,7 +4,6 @@ module.exports = {
     connection: {
       filename: `${__dirname}/dev.sqlite3`,
     },
-    pool: { min: 1, max: 10 },
     migrations: {
       directory: `${__dirname}/migrations`,
     },
